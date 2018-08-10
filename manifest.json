@@ -1,0 +1,21 @@
+{
+  "name": "Aircall",
+  "version": "0.0.1",
+  "description": "description",
+  "tags": ["incoming", "outgoing", "batch", "oneColumn", "smart-notifier"],
+  "ui": false,
+  "picture": "picture.png",
+  "admin": "admin.html",
+  "readme": "readme.md",
+  "private_settings": [],
+  "settings": [],
+  "resources": [],
+  "subscriptions": [{ "url": "/smart-notifier" }],
+  "schedules" : [
+    {
+      "url": "/status",
+      "type": "interval",
+      "value": "5"
+    }
+  ]
+}
