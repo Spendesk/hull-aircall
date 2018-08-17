@@ -116,6 +116,16 @@ class ServiceClient {
     });
   }
 
+  postContact(data: AircallContactWrite): Promise<AircallContactRead> {
+    if (!this.hasValidApiKey()) {
+      return Promise.reject(
+        new ConfigurationError("No API key specified in the Settings.", {})
+      );
+    }
+
+    return this.agent.post(`/contacts/`).send(data);
+  }
+
   putContact(data: AircallContactWrite): Promise<AircallContactRead> {
     if (!this.hasValidApiKey()) {
       return Promise.reject(
@@ -127,7 +137,25 @@ class ServiceClient {
       return Promise.reject(new Error("Cannot update contact without id"));
     }
 
-    return this.agent.post(`/contacts/${data.id}/`).send(data);
+    return this.agent.put(`/contacts/${data.id}/`).send(data);
+  }
+
+  postContactEnvelopes(envelopes: Array<AircallContactUpdateEnvelope>): Promise<Array<AircallContactUpdateEnvelope>> {
+    return Promise.all(
+      envelopes.map(envelope => {
+        const enrichedEnvelope = _.cloneDeep(envelope);
+
+        return this.postContact(envelope.aircallContactWrite)
+          .then(response => {
+            enrichedEnvelope.aircallContactRead = response.body;
+            return enrichedEnvelope;
+          })
+          .catch(error => {
+            enrichedEnvelope.error = error.response.body;
+            return enrichedEnvelope;
+          });
+      })
+    );
   }
 
   putContactEnvelopes(envelopes: Array<AircallContactUpdateEnvelope>): Promise<Array<AircallContactUpdateEnvelope>> {

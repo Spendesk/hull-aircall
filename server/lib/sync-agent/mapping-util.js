@@ -26,7 +26,7 @@ class MappingUtil {
     this.attributeMappings = settings.attributeMappings;
   }
 
-  mapHullUserToContact(envelope: UserUpdateEnvelope): AircallContactWrite {
+  mapHullUserToContact(envelope: AircallContactUpdateEnvelope): AircallContactWrite {
     const hullUser = envelope.hullUser;
     const contactWrite: AircallContactWrite = {};
 
