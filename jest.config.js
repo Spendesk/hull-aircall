@@ -25,3 +25,4 @@ module.exports = {
   "testPathIgnorePatterns": [
     "<rootDir>/(dist|docs|dll|config|flow-typed|node_modules)/"
   ]
+}
