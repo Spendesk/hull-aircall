@@ -1,51 +1,42 @@
 /* @flow */
-import type { $Application, $Response } from "express";
-import type { TRequest } from "hull";
+import type { $Application } from "express";
 
-const { smartNotifierHandler } = require("hull/lib/utils");
-const bodyParser = require("body-parser");
+const cors = require("cors");
+const { notifHandler, smartNotifierHandler } = require("hull/lib/utils");
 
-const notificationsConfiguration = require("./notifications-configuration");
-const { webhookHandler, statusCheck } = require("./actions");
+const actions = require("./actions/index");
 
-function server(app: $Application, { token }: Object): $Application {
-  app.get("/admin.html", (req: TRequest, res: $Response) => {
-    res.render("admin.html", { hostname: req.hostname, token });
-  });
+function server(app: $Application): $Application {
+  app.post("/fetch", actions.fetch);
+  app.post("/fetch-recent-leads", actions.fetch);
 
-  app.all("/webhook", bodyParser.json(), webhookHandler);
-
-  app.all("/status", statusCheck);
-
-  app.use(
-    "/batch",
-    smartNotifierHandler({
-      userHandlerOptions: {
-        groupTraits: false
-      },
-      handlers: notificationsConfiguration
-    })
-  );
-
-  app.use(
+  app.post(
     "/smart-notifier",
     smartNotifierHandler({
-      handlers: notificationsConfiguration
+      handlers: {
+        "user:update": actions.userUpdate
+      }
     })
   );
 
-  // you can use object spread syntax
-  const a = { a: 1 };
-  const b = { b: 2 };
-  const c = { ...a, ...b, c: 3 };
+  app.post(
+    "/batch",
+    notifHandler({
+      userHandlerOptions: {
+        maxSize: 200
+      },
+      handlers: {
+        "user:update": actions.userUpdate
+      }
+    })
+  );
 
-  console.log(c);
+  app.get("/admin", actions.adminHandler);
 
-  // you can use async/await
-  async function testAsync() {
-    await Promise.resolve();
-  }
-  testAsync();
+  app.get("/fields-contact-out", cors(), actions.fieldsContactOutbound);
+  app.get("/fields-contact-in", cors(), actions.fieldsContactInbound);
+
+  app.all("/status", actions.statusCheck);
 
   return app;
 }
