@@ -1,5 +1,5 @@
 {
-  "name": "Aircall",
+  "name": "Aircall Connector",
   "version": "0.0.1",
   "description": "description",
   "tags": ["incoming", "outgoing", "batch", "oneColumn", "smart-notifier"],
@@ -7,15 +7,73 @@
   "picture": "picture.png",
   "admin": "admin.html",
   "readme": "readme.md",
-  "private_settings": [],
+  "private_settings": [
+    {
+      "name": "api_key",
+      "title": "Aircall API Key",
+      "type": "string",
+      "description": "Find it via your aircall dashboard: Account > API Keys"
+    },
+    {
+        "name": "synchronized_user_segments",
+        "title": "Send users to Aircall when belonging to one of these user segments",
+        "type": "array",
+        "default": [],
+        "format": "segment"
+    },
+    {
+        "name": "contact_attributes_outbound",
+        "title": "Send Contact Attributes to Close.io",
+        "description": "Name and domain are sent automatically",
+        "type": "array",
+        "format": "table",
+        "default": [
+            {
+                "hull_field_name": "phone",
+                "aircall_field_name": "phone_numbers"
+            }
+        ],
+        "items": {
+            "type": "object",
+            "properties": {
+                "hull_field_name": {
+                    "type": "string",
+                    "format": "trait",
+                    "title": "Hull Attribute"
+                },
+                "aircall_field_name": {
+                    "type": "string",
+                    "title": "Aircall Field",
+                    "format": "select",
+                    "options": {
+                        "loadOptions": "/fields-contact-out"
+                    }
+                }
+            },
+            "required": [
+                "hull_field_name",
+                "aircall_field_name"
+            ]
+        }
+    },
+    {
+      "name": "contact_attributes_inbound",
+      "title": "List of contact fields to fetch from Aircall",
+      "type": "array",
+      "format": "select",
+      "options": {
+          "loadOptions": "/fields-contact-in"
+      }
+    }
+  ],
   "settings": [],
   "resources": [],
   "subscriptions": [{ "url": "/smart-notifier" }],
-  "schedules" : [
+  "schedules": [
     {
-      "url": "/status",
-      "type": "interval",
-      "value": "5"
+      "url": "/fetch",
+      "type": "cron",
+      "value": "0 4 1 * *"
     }
   ]
 }
