@@ -1,0 +1,68 @@
+{
+  "contact": {
+      "id": 800777,
+      "direct_link": "https://api.aircall.io/v1/contacts/800777",
+      "first_name": "Team",
+      "last_name": "Customer Success",
+      "company_name": "Aircall",
+      "information": "Click on a number in order to call us!",
+      "is_shared": true,
+      "created_at": 1465198916,
+      "updated_at": 1533893675,
+      "emails": [
+          {
+              "id": 1955649,
+              "label": "Jobs",
+              "value": "jobs@aircall.io"
+          },
+          {
+              "id": 1955648,
+              "label": "Support",
+              "value": "support@aircall.io"
+          },
+          {
+              "id": 1955650,
+              "label": "Work",
+              "value": "contact@aircall.io"
+          }
+      ],
+      "phone_numbers": [
+          {
+              "id": 1955655,
+              "label": "Amsterdam",
+              "value": "+31852081002"
+          },
+          {
+              "id": 1955656,
+              "label": "Milan",
+              "value": "+390294759727"
+          },
+          {
+              "id": 1955651,
+              "label": "New York",
+              "value": "+16467765948"
+          },
+          {
+              "id": 1955653,
+              "label": "Paris",
+              "value": "+33176360695"
+          },
+          {
+              "id": 1955652,
+              "label": "San Francisco",
+              "value": "+14157120785"
+          },
+          {
+              "id": 1955654,
+              "label": "Sydney",
+              "value": "+61284172226"
+          },
+          {
+              "id": 1955657,
+              "label": "Tokyo",
+              "value": "+81345406726"
+          }
+      ],
+      "urls": []
+  }
+}
