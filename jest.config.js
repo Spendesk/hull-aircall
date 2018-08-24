@@ -20,7 +20,7 @@ module.exports = {
     "^.+\\.(js|jsx)$": "<rootDir>/node_modules/babel-jest"
   },
   "testEnvironment": "node",
-  "testMatch": ["<rootDir>/test/unit/**/*-test.js", "<rootDir>/test/integration/**/*-test.js"],
+  "testMatch": ["<rootDir>/test/unit/**/*.spec.js", "<rootDir>/test/integration/**/*.spec.js"],
   "transformIgnorePatterns": ["[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"],
   "testPathIgnorePatterns": [
     "<rootDir>/(dist|docs|dll|config|flow-typed|node_modules)/"
