@@ -11,11 +11,9 @@ import type {
 } from "./types";
 
 const _ = require("lodash");
-const debug = require("debug")("aircall-connector:service-client");
 
 const superagent = require("superagent");
 const SuperagentThrottle = require("superagent-throttle");
-const prefixPlugin = require("superagent-prefix");
 const promiseToReadableStream = require("./support/promise-to-readable-stream");
 
 const {
@@ -51,7 +49,6 @@ class ServiceClient {
 
     this.agent = superagent
       .agent()
-      .use(prefixPlugin(this.urlPrefix))
       .use(throttle.plugin())
       .redirects(0)
       .use(superagentErrorPlugin({ timeout: 10000 }))
@@ -79,14 +76,17 @@ class ServiceClient {
       .ok(res => res.status === 200);
   }
 
-  getContacts(per_page: number = 100, page: number = 0): Promise<SuperAgentResponse<AircallContactListResponse>> {
+  getContacts(
+    per_page: number = 100,
+    page: number = 0
+  ): Promise<SuperAgentResponse<AircallContactListResponse>> {
     if (!this.hasValidApiKey()) {
       return Promise.reject(
         new ConfigurationError("No API key specified in the Settings.", {})
       );
     }
 
-    return this.agent.get("/contacts/").query({
+    return this.agent.get(`${this.urlPrefix}/contacts/`).query({
       per_page,
       page
     });
@@ -99,7 +99,7 @@ class ServiceClient {
 
         const apiOps = [];
 
-        if (res.body.meta.count !== 0) {
+        if (res.body.meta.total !== 0) {
           const totalPages = Math.ceil(res.body.meta.total / 100);
 
           for (let page = 1; page < totalPages; page += 1) {
@@ -123,7 +123,7 @@ class ServiceClient {
       );
     }
 
-    return this.agent.post(`/contacts/`).send(data);
+    return this.agent.post(`${this.urlPrefix}/contacts/`).send(data);
   }
 
   putContact(data: AircallContactWrite): Promise<AircallContactRead> {
@@ -137,35 +137,37 @@ class ServiceClient {
       return Promise.reject(new Error("Cannot update contact without id"));
     }
 
-    return this.agent.put(`/contacts/${data.id}/`).send(data);
+    return this.agent.put(`${this.urlPrefix}/contacts/${data.id}/`).send(data);
   }
 
-  postContactEnvelopes(envelopes: Array<AircallContactUpdateEnvelope>): Promise<Array<AircallContactUpdateEnvelope>> {
+  postContactEnvelopes(
+    envelopes: Array<AircallContactUpdateEnvelope>
+  ): Promise<Array<AircallContactUpdateEnvelope>> {
     return Promise.all(
       envelopes.map(envelope => {
         const enrichedEnvelope = _.cloneDeep(envelope);
-
         return this.postContact(envelope.aircallContactWrite)
-          .then(response => {
-            enrichedEnvelope.aircallContactRead = response.body;
-            return enrichedEnvelope;
-          })
-          .catch(error => {
-            enrichedEnvelope.error = error.response.body;
-            return enrichedEnvelope;
-          });
+        .then(response => {
+          enrichedEnvelope.aircallContactRead = response.body.contact;
+          return enrichedEnvelope;
+        })
+        .catch(error => {
+          enrichedEnvelope.error = error.response.body;
+          return enrichedEnvelope;
+        });
       })
     );
   }
 
-  putContactEnvelopes(envelopes: Array<AircallContactUpdateEnvelope>): Promise<Array<AircallContactUpdateEnvelope>> {
+  putContactEnvelopes(
+    envelopes: Array<AircallContactUpdateEnvelope>
+  ): Promise<Array<AircallContactUpdateEnvelope>> {
     return Promise.all(
       envelopes.map(envelope => {
         const enrichedEnvelope = _.cloneDeep(envelope);
-
         return this.putContact(envelope.aircallContactWrite)
           .then(response => {
-            enrichedEnvelope.aircallContactRead = response.body;
+            enrichedEnvelope.aircallContactRead = response.body.contact;
             return enrichedEnvelope;
           })
           .catch(error => {
@@ -190,3 +192,5 @@ class ServiceClient {
     return false;
   }
 }
+
+module.exports = ServiceClient;

@@ -2,22 +2,21 @@
 import type {
   THullReqContext,
   THullUserUpdateMessage,
-  THullAccountUpdateMessage,
   THullConnector
 } from "hull";
 
 import type {
   HullMetrics,
   HullClient,
+  HullFieldDropdownItem,
   AircallOutboundMapping,
   AircallConnectorSettings,
-  AircallSpecialProperty,
-  AircallContactWrite,
   AircallContactUpdateEnvelope,
   FilterUtilConfiguration
 } from "./types";
 
 const _ = require("lodash");
+const { DateTime } = require("luxon");
 
 const FilterUtil = require("./sync-agent/filter-util");
 const MappingUtil = require("./sync-agent/mapping-util");
@@ -25,7 +24,9 @@ const ServiceClient = require("./service-client");
 
 const pipeStreamToPromise = require("./support/pipe-stream-to-promise");
 
-const BASE_API_URL = "https://api.aircall.io/v1/";
+const CONTACT_FIELDDEFS = require("./sync-agent/contact-fielddefs");
+
+const BASE_API_URL = "https://api.aircall.io/v1";
 
 class SyncAgent {
   hullMetric: HullMetrics;
@@ -52,7 +53,8 @@ class SyncAgent {
     this.normalizedPrivateSettings = this.normalizeSettings(loadedSettings);
 
     const filterUtilConfiguration: FilterUtilConfiguration = {
-      synchronizedUserSegments: this.normalizedPrivateSettings.synchronized_user_segments,
+      synchronizedUserSegments: this.normalizedPrivateSettings
+        .synchronized_user_segments
     };
     this.filterUtil = new FilterUtil(filterUtilConfiguration);
 
@@ -78,36 +80,27 @@ class SyncAgent {
       attributeMappings: _.pick(this.normalizedPrivateSettings, [
         "contact_attributes_outbound",
         "contact_attributes_inbound"
-      ]),
+      ])
     };
     this.mappingUtil = new MappingUtil(mappingUtilConfiguration);
   }
 
-  normalizeSettings(settings: AircallConnectorSettings): AircallConnectorSettings {
+  normalizeSettings(
+    settings: AircallConnectorSettings
+  ): AircallConnectorSettings {
     const contactAttrOut: Array<AircallOutboundMapping> = _.get(
       settings,
       "contact_attributes_outbound",
       []
     );
-    const contactAttrIn: Array<string> = _.get(
+    let contactAttrIn: Array<string> = _.get(
       settings,
       "contact_attributes_inbound",
       []
     );
 
-    if (
-      _.find(contactAttrOut, {
-        hull_field_name: "phone",
-        aircall_field_name: "phone_numbers"
-      }) === undefined
-    ) {
-      contactAttrOut.push({
-        hull_field_name: "phone",
-        aircall_field_name: "phone_numbers"
-      });
-    }
-
-    _.uniq(contactAttrIn.push(contactAircallId));
+    contactAttrIn.push("phone_numbers");
+    contactAttrIn = _.uniq(contactAttrIn);
 
     const finalSettings: AircallConnectorSettings = _.cloneDeep(settings);
     finalSettings.contact_attributes_outbound = contactAttrOut;
@@ -116,31 +109,28 @@ class SyncAgent {
     return finalSettings;
   }
 
+  getContactFieldOptionsInbound(): Array<HullFieldDropdownItem> {
+    const fields = _.filter(CONTACT_FIELDDEFS, { in: true });
+    const opts = _.map(fields, f => {
+      return { value: f.id, label: f.label };
+    });
+    return opts;
+  }
+
+  getContactFieldOptionsOutbound(): Array<HullFieldDropdownItem> {
+    const fields = _.filter(CONTACT_FIELDDEFS, { out: true });
+    const opts = _.map(fields, f => {
+      return { value: f.id, label: f.label };
+    });
+    return opts;
+  }
+
   async fetchUpdatedContacts(): Promise<any> {
     await this.initialize();
 
-    const safetyInterval = Duration.fromObject({ minutes: 5 });
-
-    let lastSyncAtRaw = parseInt(
-      this.normalizedPrivateSettings.last_sync_at,
-      10
-    );
-
-    if (_.isNaN(lastSyncAtRaw)) {
-      lastSyncAtRaw = Math.floor(
-        DateTime.utc()
-          .minus({ days: 2 })
-          .toMillis() / 1000
-      );
-    }
-
-    const since = DateTime.fromMillis(lastSyncAtRaw * 1000).minus(
-      safetyInterval
-    );
-
     this.hullClient.logger.info("incoming.job.start");
 
-    const streamOfUpdatedContacts = this.serviceClient.getContactsStream();
+    const streamOfUpdatedContacts = this.aircallClient.getContactsStream();
 
     return pipeStreamToPromise(streamOfUpdatedContacts, contacts => {
       this.hullClient.logger.info("incoming.job.progress", {
@@ -161,10 +151,7 @@ class SyncAgent {
           return asUser
             .traits(hullUserAttributes)
             .then(() => {
-              asUser.logger.info(
-                "incoming.user.success",
-                hullUserAttributes
-              );
+              asUser.logger.info("incoming.user.success", hullUserAttributes);
             })
             .catch(error => {
               console.log(error);
@@ -174,24 +161,25 @@ class SyncAgent {
         })
       );
     })
-    .then(() => {
-      this.helpers.updateSettings({
-        last_sync_at: Math.floor(DateTime.utc().toMillis() / 1000)
-      });
+      .then(() => {
+        this.helpers.updateSettings({
+          last_sync_at: Math.floor(DateTime.utc().toMillis() / 1000)
+        });
 
-      this.hullClient.logger.info("incoming.job.success");
-    })
-    .catch(error => {
-      this.hullClient.logger.error("incoming.job.error", { reason: error });
-    });
+        this.hullClient.logger.info("incoming.job.success");
+      })
+      .catch(error => {
+        this.hullClient.logger.error("incoming.job.error", { reason: error });
+      });
   }
 
-  async buildContactUpdateEnvelope(message: THullUserUpdateMessage): Promise<AircallContactUpdateEnvelope> {
+  async buildContactUpdateEnvelope(
+    message: THullUserUpdateMessage
+  ): Promise<AircallContactUpdateEnvelope> {
     const combinedUser = _.cloneDeep(message.user);
     combinedUser.account = _.cloneDeep(message.account);
 
     const cachedAircallContactReadId = await this.cache.get(message.user.id);
-    
     const envelope = {};
     envelope.message = message;
     envelope.hullUser = combinedUser;
@@ -199,20 +187,22 @@ class SyncAgent {
     envelope.cachedAircallContactReadId = cachedAircallContactReadId || null;
     envelope.skipReason = null;
     envelope.error = null;
-    envelope.aircallContactWrite = this.mappingUtil.mapHullUserToContact(envelope);
-    
+    envelope.aircallContactWrite = this.mappingUtil.mapHullUserToContact(
+      envelope
+    );
     return envelope;
   }
 
-  sendUserMessages(messages: Array<THullUserUpdateMessage>): Promise<*> {
+  async sendUserMessages(messages: Array<THullUserUpdateMessage>): Promise<*> {
     await this.initialize();
 
     const deduplicatedMessages = this.filterUtil.deduplicateUserUpdateMessages(
       messages
     );
-    
     const envelopes = await Promise.all(
-      deduplicatedMessages.map(message => this.buildUserUpdateEnvelope(message))
+      deduplicatedMessages.map(message =>
+        this.buildContactUpdateEnvelope(message)
+      )
     );
 
     const filterResults = this.filterUtil.filterUsers(envelopes);
@@ -241,7 +231,6 @@ class SyncAgent {
             .traits(
               this.mappingUtil.mapContactToHullUserAttributes(combinedContact)
             );
-            
           return this.hullClient
             .asUser(updatedEnvelope.message.user)
             .logger.info(
@@ -267,19 +256,15 @@ class SyncAgent {
             throw new Error(insertedEnvelope.error || "Unkown error");
           }
 
-          const combinedContact = insertedEnvelope.aircallContactRead;
-
           await this.hullClient
             .asUser(insertedEnvelope.message.user)
             .traits(
-              this.mappingUtil.mapContactToHullUserAttributes(combinedContact)
+              this.mappingUtil.mapContactToHullUserAttributes(insertedEnvelope.aircallContactRead)
             );
-          
           await this.cache.set(
             insertedEnvelope.message.id,
             insertedEnvelope.aircallContactRead.id
           );
-
           return this.hullClient
             .asUser(insertedEnvelope.message.user)
             .logger.info(

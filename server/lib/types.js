@@ -9,8 +9,6 @@ import type {
   HullUserUpdateMessage
 } from "hull";
 
-import type { Readable } from "stream";
-
 /*
  *** Hull Types. Replace when 0.14.0 is released
  */
@@ -179,7 +177,7 @@ export type AircallContactWrite = {
   emails?: Array<AircallSpecialProperty>,
   phone_numbers?: Array<AircallSpecialProperty>,
   urls?: Array<AircallSpecialProperty>
-}
+};
 
 export type AircallContactListMeta = {
   count: number,
@@ -193,6 +191,13 @@ export type AircallContactListMeta = {
 export type AircallContactListResponse = {
   meta: AircallContactListMeta,
   contacts: Array<AircallContactRead>
+};
+
+export type AircallContactFieldDefinition = {
+  id: string,
+  label: string,
+  in: boolean,
+  out: boolean
 };
 
 export type AircallContactUpdateEnvelope = {

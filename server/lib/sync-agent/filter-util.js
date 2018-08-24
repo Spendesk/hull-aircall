@@ -15,7 +15,9 @@ class FilterUtil {
     this.synchronizedUserSegments = config.synchronizedUserSegments || [];
   }
 
-  filterUsers(envelopes: Array<AircallContactUpdateEnvelope>): FilterResults<AircallContactUpdateEnvelope> {
+  filterUsers(
+    envelopes: Array<AircallContactUpdateEnvelope>
+  ): FilterResults<AircallContactUpdateEnvelope> {
     const results: FilterResults<AircallContactUpdateEnvelope> = {
       toSkip: [],
       toInsert: [],
@@ -23,14 +25,16 @@ class FilterUtil {
     };
 
     envelopes.forEach((envelope: AircallContactUpdateEnvelope) => {
-      if (_.isNil(envelope.hullUser["phone"])) {
-        envelope.skipReason = `The Hull account has no value for the unique identifier attribute 'phone'`;
+      if (_.isNil(envelope.hullUser.phone)) {
+        envelope.skipReason =
+          "The Hull account has no value for the unique identifier attribute 'phone'";
         envelope.opsResult = "skip";
         return results.toSkip.push(envelope);
       }
 
       if (!this.matchesSynchronizedUserSegments(envelope)) {
-        envelope.skipReason = "The Hull user is not part of any whitelisted segment and won't be synchronized with aircall.io.";
+        envelope.skipReason =
+          "The Hull user is not part of any whitelisted segment and won't be synchronized with aircall.io.";
         envelope.opsResult = "skip";
         return results.toSkip.push(envelope);
       }
@@ -45,7 +49,9 @@ class FilterUtil {
     return results;
   }
 
-  matchesSynchronizedUserSegments(envelope: AircallContactUpdateEnvelope): boolean {
+  matchesSynchronizedUserSegments(
+    envelope: AircallContactUpdateEnvelope
+  ): boolean {
     const msgSegmentIds: Array<string> = _.get(
       envelope,
       "message.segments",
@@ -61,25 +67,32 @@ class FilterUtil {
     return false;
   }
 
-  deduplicateUserUpdateMessages(messages: Array<THullUserUpdateMessage>): Array<THullUserUpdateMessage> {
+  deduplicateUserUpdateMessages(
+    messages: Array<THullUserUpdateMessage>
+  ): Array<THullUserUpdateMessage> {
     return _.chain(messages)
       .groupBy("user.id")
-      .map((groupedMessages: Array<THullUserUpdateMessage>): THullUserUpdateMessage => {
-        const dedupedMessage = _.cloneDeep(
-          _.last(_.sortBy(groupedMessages, ["user.indexed_at"]))
-        );
+      .map(
+        (
+          groupedMessages: Array<THullUserUpdateMessage>
+        ): THullUserUpdateMessage => {
+          const dedupedMessage = _.cloneDeep(
+            _.last(_.sortBy(groupedMessages, ["user.indexed_at"]))
+          );
 
-        const hashedEvents = {};
-        groupedMessages.forEach((m: THullUserUpdateMessage) => {
-          _.get(m, "events", []).forEach((e: Object) => {
-            _.set(hashedEvents, e.event_id, e);
+          const hashedEvents = {};
+          groupedMessages.forEach((m: THullUserUpdateMessage) => {
+            _.get(m, "events", []).forEach((e: Object) => {
+              _.set(hashedEvents, e.event_id, e);
+            });
           });
-        });
 
-        dedupedMessage.events = _.values(hashedEvents);
+          dedupedMessage.events = _.values(hashedEvents);
 
-        return dedupedMessage;  
-      }).value();
+          return dedupedMessage;
+        }
+      )
+      .value();
   }
 }
 

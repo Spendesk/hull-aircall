@@ -1,14 +1,9 @@
 /* @flow */
-import type {
-  THullUser,
-  THullUserIdent,
-  THullUserAttributes
-} from "hull";
+import type { THullUserIdent, THullUserAttributes } from "hull";
 
 import type {
   AircallContactRead,
   AircallContactWrite,
-  AircallSpecialProperty,
   AircallAttributesMapping,
   AircallOutboundMapping,
   AircallMappingUtilSettings,
@@ -16,8 +11,6 @@ import type {
 } from "../types";
 
 const _ = require("lodash");
-const { URL } = require("url");
-const debug = require("debug")("hull-closeio:mapping-util");
 
 class MappingUtil {
   attributeMappings: AircallAttributesMapping;
@@ -26,7 +19,9 @@ class MappingUtil {
     this.attributeMappings = settings.attributeMappings;
   }
 
-  mapHullUserToContact(envelope: AircallContactUpdateEnvelope): AircallContactWrite {
+  mapHullUserToContact(
+    envelope: AircallContactUpdateEnvelope
+  ): AircallContactWrite {
     const hullUser = envelope.hullUser;
     const contactWrite: AircallContactWrite = {};
 
@@ -54,20 +49,19 @@ class MappingUtil {
             contactWrite[arrayAttrName] = [];
           }
 
-          const arrayVal = _.concat(
-            contactWrite[arrayAttrName],
-            { 
-              label: labelValue, 
-              value: hullAttrValue
-            }
-          );
+          const arrayVal = _.concat(contactWrite[arrayAttrName], {
+            label: labelValue,
+            value: hullAttrValue
+          });
 
           contactWrite[arrayAttrName] = arrayVal;
         } else {
           contactWrite[aircallAttrName] = hullAttrValue;
         }
       }
-    })
+    });
+
+    return contactWrite;
   }
 
   mapContactToHullUserIdent(contact: AircallContactRead): THullUserIdent {
@@ -82,9 +76,14 @@ class MappingUtil {
     return ident;
   }
 
-  mapContactToHullUserAttributes(contact: AircallContactRead): THullUserAttributes {
+  mapContactToHullUserAttributes(
+    contact: AircallContactRead
+  ): THullUserAttributes {
     const mapping = this.attributeMappings.contact_attributes_inbound || [];
-    const hullUserAttr: THullUserAttributes = this.applyMapping(mapping, contact);
+    const hullUserAttr: THullUserAttributes = this.applyMapping(
+      mapping,
+      contact
+    );
 
     if (_.has(contact, "id")) {
       hullUserAttr["aircall/id"] = { value: _.get(contact, "id"), operation: "set" };
@@ -115,32 +114,43 @@ class MappingUtil {
     return hullUserAttr;
   }
 
-  applyMapping(mapping: Array<string>, contact: AircallContactRead):  THullUserAttributes {
-    return mapping.reduce((hullAttrs: THullUserAttributes, m: string) => {
-      switch (m) {
-        case "phone_numbers":
-        case "emails":
-        case "urls":
-          const arrayVal = _.get(contact, m, []);
-
-          _.forEach(arrayVal, v => {
-            hullAttrs[`aircall/${m.slice(0, -1)}_${_.get(v, "label").toLowerCase()}`] = {
-              value: _.get(v, "value"),
-              operation: "set"
-            };
-          });
-          break;
-        default:
-          if (!_.isNil(_.get(contact, m))) {
-            hullAttrs[`aircall/${m}`] = {
-              value: _.get(contact, m),
-              operation: "set"
-            };
+  applyMapping(
+    mapping: Array<string>,
+    contact: AircallContactRead
+  ): THullUserAttributes {
+    return mapping.reduce(
+      (hullAttrs: THullUserAttributes, m: string) => {
+        switch (m) {
+          case "phone_numbers":
+          case "emails":
+          case "urls": {
+            const arrayVal = _.get(contact, m, []);
+            _.forEach(arrayVal, v => {
+              hullAttrs[
+                `aircall/${m.slice(0, -1)}_${_.get(v, "label")
+                  .toLowerCase()
+                  .replace(" ", "_")}`
+              ] = {
+                value: _.get(v, "value"),
+                operation: "set"
+              };
+            });
+            break;
           }
-      }
+          default: {
+            if (!_.isNil(_.get(contact, m))) {
+              hullAttrs[`aircall/${m}`] = {
+                value: _.get(contact, m),
+                operation: "set"
+              };
+            }
+          }
+        }
 
-      return hullAttrs;
-    });
+        return hullAttrs;
+      },
+      {}
+    );
   }
 }
 
