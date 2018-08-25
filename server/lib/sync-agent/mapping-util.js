@@ -68,7 +68,7 @@ class MappingUtil {
     const ident = {};
 
     if (!_.isEmpty(contact.phone_numbers)) {
-      ident.phone = _.get(_.first(_.get(contact, "phone_numbers")), "value");
+      ident.phone = _.get(contact, "phone_numbers[0].value");
     }
 
     ident.anonymous_id = `aircall:${contact.id}`;
