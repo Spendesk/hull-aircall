@@ -86,7 +86,10 @@ class MappingUtil {
     );
 
     if (_.has(contact, "id")) {
-      hullUserAttr["aircall/id"] = { value: _.get(contact, "id"), operation: "set" };
+      hullUserAttr["aircall/id"] = {
+        value: _.get(contact, "id"),
+        operation: "set"
+      };
     }
 
     if (
@@ -118,39 +121,36 @@ class MappingUtil {
     mapping: Array<string>,
     contact: AircallContactRead
   ): THullUserAttributes {
-    return mapping.reduce(
-      (hullAttrs: THullUserAttributes, m: string) => {
-        switch (m) {
-          case "phone_numbers":
-          case "emails":
-          case "urls": {
-            const arrayVal = _.get(contact, m, []);
-            _.forEach(arrayVal, v => {
-              hullAttrs[
-                `aircall/${m.slice(0, -1)}_${_.get(v, "label")
-                  .toLowerCase()
-                  .replace(" ", "_")}`
-              ] = {
-                value: _.get(v, "value"),
-                operation: "set"
-              };
-            });
-            break;
-          }
-          default: {
-            if (!_.isNil(_.get(contact, m))) {
-              hullAttrs[`aircall/${m}`] = {
-                value: _.get(contact, m),
-                operation: "set"
-              };
-            }
+    return mapping.reduce((hullAttrs: THullUserAttributes, m: string) => {
+      switch (m) {
+        case "phone_numbers":
+        case "emails":
+        case "urls": {
+          const arrayVal = _.get(contact, m, []);
+          _.forEach(arrayVal, v => {
+            hullAttrs[
+              `aircall/${m.slice(0, -1)}_${_.get(v, "label")
+                .toLowerCase()
+                .replace(" ", "_")}`
+            ] = {
+              value: _.get(v, "value"),
+              operation: "set"
+            };
+          });
+          break;
+        }
+        default: {
+          if (!_.isNil(_.get(contact, m))) {
+            hullAttrs[`aircall/${m}`] = {
+              value: _.get(contact, m),
+              operation: "set"
+            };
           }
         }
+      }
 
-        return hullAttrs;
-      },
-      {}
-    );
+      return hullAttrs;
+    }, {});
   }
 }
 

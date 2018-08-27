@@ -147,14 +147,14 @@ class ServiceClient {
       envelopes.map(envelope => {
         const enrichedEnvelope = _.cloneDeep(envelope);
         return this.postContact(envelope.aircallContactWrite)
-        .then(response => {
-          enrichedEnvelope.aircallContactRead = response.body.contact;
-          return enrichedEnvelope;
-        })
-        .catch(error => {
-          enrichedEnvelope.error = error.response.body;
-          return enrichedEnvelope;
-        });
+          .then(response => {
+            enrichedEnvelope.aircallContactRead = response.body.contact;
+            return enrichedEnvelope;
+          })
+          .catch(error => {
+            enrichedEnvelope.error = error.response.body;
+            return enrichedEnvelope;
+          });
       })
     );
   }

@@ -259,7 +259,9 @@ class SyncAgent {
           await this.hullClient
             .asUser(insertedEnvelope.message.user)
             .traits(
-              this.mappingUtil.mapContactToHullUserAttributes(insertedEnvelope.aircallContactRead)
+              this.mappingUtil.mapContactToHullUserAttributes(
+                insertedEnvelope.aircallContactRead
+              )
             );
           await this.cache.set(
             insertedEnvelope.message.id,

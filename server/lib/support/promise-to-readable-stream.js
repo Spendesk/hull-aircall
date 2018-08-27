@@ -28,7 +28,6 @@ function promiseToReadableStream(
           this.push(null);
         })
         .catch(error => {
-          debugger;
           debug("error while reading data from promise", error);
           this.destroy(error);
         });
