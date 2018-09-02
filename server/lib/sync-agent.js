@@ -12,7 +12,9 @@ import type {
   AircallOutboundMapping,
   AircallConnectorSettings,
   AircallContactUpdateEnvelope,
-  FilterUtilConfiguration
+  FilterUtilConfiguration,
+  AircallMappingUtilSettings,
+  ServiceClientConfiguration
 } from "./types";
 
 const _ = require("lodash");

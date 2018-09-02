@@ -28,14 +28,12 @@ class FilterUtil {
       if (_.isNil(envelope.hullUser.phone)) {
         envelope.skipReason =
           "The Hull account has no value for the unique identifier attribute 'phone'";
-        envelope.opsResult = "skip";
         return results.toSkip.push(envelope);
       }
 
       if (!this.matchesSynchronizedUserSegments(envelope)) {
         envelope.skipReason =
           "The Hull user is not part of any whitelisted segment and won't be synchronized with aircall.io.";
-        envelope.opsResult = "skip";
         return results.toSkip.push(envelope);
       }
 

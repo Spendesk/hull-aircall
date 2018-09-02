@@ -7,7 +7,7 @@ function fetchAction(req: Object, res: $Response): void {
   const syncAgent = new SyncAgent(req.hull);
 
   res.json({ ok: true });
-  syncAgent.fetchUpdatedLeads();
+  syncAgent.fetchUpdatedContacts();
 }
 
 module.exports = fetchAction;

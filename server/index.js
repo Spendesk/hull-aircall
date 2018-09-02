@@ -27,5 +27,5 @@ if (NODE_ENV === "development") {
 }
 
 connector.setupApp(app);
-server(app, { hostSecret: options.hostSecret });
+server(app);
 connector.startApp(app);

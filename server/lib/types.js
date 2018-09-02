@@ -204,10 +204,10 @@ export type AircallContactUpdateEnvelope = {
   message: HullUserUpdateMessage,
   hullUser: HullUser,
   aircallContactWrite: AircallContactWrite,
-  aircallContactRead?: AircallContactRead,
-  cachedAircallContactReadId?: string,
-  skipReason?: string,
-  error?: string
+  aircallContactRead: AircallContactRead | null,
+  cachedAircallContactReadId: string | null,
+  skipReason: string | null,
+  error: string | null
 };
 
 export type AircallMappingUtilSettings = {
