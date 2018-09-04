@@ -23,7 +23,7 @@
     },
     {
         "name": "contact_attributes_outbound",
-        "title": "Send Contact Attributes to Close.io",
+        "title": "Send Contact Attributes to Aircall.io",
         "description": "Name and domain are sent automatically",
         "type": "array",
         "format": "table",

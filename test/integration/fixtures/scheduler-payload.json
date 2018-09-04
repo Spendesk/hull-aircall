@@ -62,7 +62,7 @@
               },
               {
                   "name": "contact_attributes_outbound",
-                  "title": "Send Contact Attributes to Close.io",
+                  "title": "Send Contact Attributes to Aircall.io",
                   "description": "Name and domain are sent automatically",
                   "type": "array",
                   "format": "table",
@@ -126,7 +126,7 @@
       "updated_at": "2018-03-30T14:36:02Z",
       "status": {
           "id": "5aa6d6b241c7c1dcae003429",
-          "name": "Close.io",
+          "name": "Aircall.io",
           "status": "ok",
           "messages": [],
           "updated_at": "2018-03-12T20:02:26Z",
@@ -140,10 +140,10 @@
       },
       "starts_at": null,
       "id": "b13d14e9cef7a82345e550b7c5bf",
-      "picture": "https://hull-closeio.herokuapp.com/picture.png",
+      "picture": "https://hull-aircall.herokuapp.com/picture.png",
       "homepage_url": "https://unittesting.hullapp.io/ships/b13d14e9cef7a82345e550b7c5bf",
       "resources": {},
-      "manifest_url": "https://hull-closeio-dev.herokuapp.com/manifest.json",
+      "manifest_url": "https://hull-aircall.herokuapp.com/manifest.json",
       "created_at": "2018-03-12T19:36:19Z",
       "translations": {},
       "privacy_policy_url": null
