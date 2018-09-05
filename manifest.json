@@ -30,7 +30,15 @@
         "default": [
             {
                 "hull_field_name": "phone",
-                "aircall_field_name": "phone_numbers"
+                "aircall_field_name": "phone_numbers.work"
+            },
+            {
+                "hull_field_name": "first_name",
+                "aircall_field_name": "first_name"
+            },
+            {
+                "hull_field_name": "last_name",
+                "aircall_field_name": "last_name"
             }
         ],
         "items": {
