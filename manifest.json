@@ -1,7 +1,7 @@
 {
   "name": "Aircall Connector",
   "version": "0.0.1",
-  "description": "description",
+  "description": "Synchronize aircall and hull users",
   "tags": ["incoming", "outgoing", "batch", "oneColumn", "smart-notifier"],
   "ui": false,
   "picture": "picture.png",
