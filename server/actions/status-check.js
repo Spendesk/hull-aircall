@@ -27,7 +27,7 @@ function statusCheckAction(req: THullRequest, res: $Response): void {
     ) {
       status = "warning";
       messages.push(
-        "No data will be sent from Hull to close.io due to missing segments configuration."
+        "No data will be sent from Hull to Aircall due to missing segments configuration."
       );
     }
 
