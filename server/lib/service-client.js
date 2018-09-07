@@ -71,9 +71,10 @@ class ServiceClient {
           this.hullMetric.value("ship.service_api.limit", limit);
         }
       })
-      .set({ "Content-Type": "application/json" })
-      .auth(this.apiKey, "")
-      .ok(res => res.status === 200);
+      .set({ 
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${this.apiKey}`
+      });
   }
 
   getContacts(
