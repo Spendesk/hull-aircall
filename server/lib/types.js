@@ -205,7 +205,7 @@ export type AircallContactUpdateEnvelope = {
   hullUser: HullUser,
   aircallContactWrite: AircallContactWrite,
   aircallContactRead: AircallContactRead | null,
-  cachedAircallContactReadId: string | null,
+  cachedAircallContactReadId: number | null,
   skipReason: string | null,
   error: string | null
 };

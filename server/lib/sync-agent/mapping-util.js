@@ -27,6 +27,8 @@ class MappingUtil {
 
     if (_.has(hullUser, "traits_aircall/id")) {
       contactWrite.id = hullUser["traits_aircall/id"];
+    } else if (envelope.cachedAircallContactReadId !== null) {
+      contactWrite.id = envelope.cachedAircallContactReadId;
     }
 
     const mappings = this.attributeMappings.contact_attributes_outbound || [];
