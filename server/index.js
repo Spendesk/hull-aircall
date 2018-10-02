@@ -1,12 +1,16 @@
 /* @flow */
-const Hull = require("hull");
-const express = require("express");
-const { devMode } = require("hull/lib/utils");
-const webpackConfig = require("../webpack.config");
+import Hull from "hull";
+import { Cache } from "hull/lib/infra";
+import RedisStore from "cache-manager-redis";
+import express from "express";
+import { devMode } from "hull/lib/utils";
 
+const webpackConfig = require("../webpack.config");
 const server = require("./server");
 
-const { LOG_LEVEL, SECRET, PORT, NODE_ENV } = process.env;
+const {
+  PORT = 8082, SECRET = "1234", REDIS_URL, LOG_LEVEL, NODE_ENV
+} = process.env;
 
 if (LOG_LEVEL) {
   Hull.logger.transports.console.level = LOG_LEVEL;
@@ -14,17 +18,48 @@ if (LOG_LEVEL) {
 
 Hull.logger.transports.console.json = true;
 
-const options = {
-  hostSecret: SECRET || "1234",
-  port: PORT || 8082
-};
+let cache;
+const ttl = 86400 * 30;
+
+if (REDIS_URL) {
+  cache = new Cache({
+    store: RedisStore,
+    url: REDIS_URL,
+    compress: true,
+    max: 10000,
+    ttl,
+    isCacheableValue: (value) => {
+      if (value && value.error === 103) {
+        return false;
+      }
+      return value !== undefined && value !== null;
+    }
+  });
+} else {
+  cache = new Cache({
+    store: "memory",
+    max: 1000,
+    ttl,
+    isCacheableValue: (value) => {
+      if (value && value.error === 103) {
+        return false;
+      }
+      return value !== undefined && value !== null;
+    }
+  });
+}
 
 const app = express();
-const connector = new Hull.Connector(options);
 
 if (NODE_ENV === "development") {
   devMode(app, webpackConfig);
 }
+
+const connector = new Hull.Connector({
+  port: PORT,
+  hostSecret: SECRET,
+  cache
+});
 
 connector.setupApp(app);
 server(app);
