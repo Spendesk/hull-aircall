@@ -1,9 +1,9 @@
 /* @flow */
-import Hull from "hull";
-import { Cache } from "hull/lib/infra";
-import RedisStore from "cache-manager-redis";
-import express from "express";
-import { devMode } from "hull/lib/utils";
+const Hull = require("hull");
+const { Cache } = require("hull/lib/infra");
+const RedisStore = require("cache-manager-redis");
+const express = require("express");
+const { devMode } = require("hull/lib/utils");
 
 const webpackConfig = require("../webpack.config");
 const server = require("./server");
