@@ -58,7 +58,7 @@ const CONTACT_FIELDDEFS: Array<AircallContactFieldDefinition> = [
   },
   {
     id: "phone_numbers.other",
-    label: "phone_numbers > Other",
+    label: "Phones > Other",
     in: false,
     out: true
   },
