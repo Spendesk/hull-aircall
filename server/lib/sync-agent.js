@@ -215,7 +215,7 @@ class SyncAgent {
               )
             );
           await this.cache.set(
-            insertedEnvelope.message.id,
+            insertedEnvelope.hullUser.id,
             insertedEnvelope.aircallContactRead.id
           );
           return this.hullClient
