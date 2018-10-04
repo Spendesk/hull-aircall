@@ -53,7 +53,8 @@ class SyncAgent {
 
     const filterUtilConfiguration: FilterUtilConfiguration = {
       synchronizedUserSegments: this.normalizedPrivateSettings
-        .synchronized_user_segments
+        .synchronized_user_segments,
+      cache: this.cache
     };
     this.filterUtil = new FilterUtil(filterUtilConfiguration);
 
@@ -130,17 +131,16 @@ class SyncAgent {
     const combinedUser = _.cloneDeep(message.user);
     combinedUser.account = _.cloneDeep(message.account);
 
-    const cachedAircallContactReadId = await this.cache.get(message.user.id);
     const envelope = {};
     envelope.message = message;
     envelope.hullUser = combinedUser;
     envelope.aircallContactRead = null;
-    envelope.cachedAircallContactReadId = cachedAircallContactReadId || null;
     envelope.skipReason = null;
     envelope.error = null;
     envelope.aircallContactWrite = this.mappingUtil.mapHullUserToContact(
       envelope
     );
+
     return envelope;
   }
 
@@ -156,7 +156,7 @@ class SyncAgent {
       )
     );
 
-    const filterResults = this.filterUtil.filterUsers(envelopes);
+    const filterResults = await this.filterUtil.filterUsers(envelopes);
 
     filterResults.toSkip.forEach(envelope => {
       this.hullClient

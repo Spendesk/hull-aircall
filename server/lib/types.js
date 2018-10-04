@@ -205,7 +205,6 @@ export type AircallContactUpdateEnvelope = {
   hullUser: HullUser,
   aircallContactWrite: AircallContactWrite,
   aircallContactRead: AircallContactRead | null,
-  cachedAircallContactReadId: number | null,
   skipReason: string | null,
   error: string | null
 };
@@ -215,7 +214,8 @@ export type AircallMappingUtilSettings = {
 };
 
 export type FilterUtilConfiguration = {
-  synchronizedUserSegments: Array<string>
+  synchronizedUserSegments: Array<string>,
+  cache: Object,
 };
 
 export type FilterResults<T> = {

@@ -7,24 +7,26 @@ import type {
 } from "../types";
 
 const _ = require("lodash");
-
+const Promise = require('bluebird');
 class FilterUtil {
   synchronizedUserSegments: Array<string>;
+  cache: Object;
 
   constructor(config: FilterUtilConfiguration) {
     this.synchronizedUserSegments = config.synchronizedUserSegments || [];
+    this.cache = config.cache;
   }
 
-  filterUsers(
+  async filterUsers(
     envelopes: Array<AircallContactUpdateEnvelope>
-  ): FilterResults<AircallContactUpdateEnvelope> {
+  ): Promise<FilterResults<AircallContactUpdateEnvelope>> {
     const results: FilterResults<AircallContactUpdateEnvelope> = {
       toSkip: [],
       toInsert: [],
       toUpdate: []
     };
 
-    envelopes.forEach((envelope: AircallContactUpdateEnvelope) => {
+    await Promise.each(envelopes, async (envelope: AircallContactUpdateEnvelope) => {
       if (_.isNil(envelope.hullUser.phone)) {
         envelope.skipReason =
           "The Hull account has no value for the unique identifier attribute 'phone'";
@@ -37,11 +39,16 @@ class FilterUtil {
         return results.toSkip.push(envelope);
       }
 
-      if (_.get(envelope, "aircallContactWrite.id", null) === null) {
-        return results.toInsert.push(envelope);
+      const cachedAircallContactId = await this.cache.get(envelope.hullUser.id);
+      if (
+        _.has(envelope.hullUser, "traits_aircall/id")
+        || !_.isNil(cachedAircallContactId)
+      ) {
+        envelope.aircallContactWrite.id = envelope.hullUser["traits_aircall/id"] || cachedAircallContactId;
+        return results.toUpdate.push(envelope);
       }
 
-      return results.toUpdate.push(envelope);
+      return results.toInsert.push(envelope);
     });
 
     return results;
