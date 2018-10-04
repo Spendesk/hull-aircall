@@ -18,13 +18,10 @@ import type {
 } from "./types";
 
 const _ = require("lodash");
-const { DateTime } = require("luxon");
 
 const FilterUtil = require("./sync-agent/filter-util");
 const MappingUtil = require("./sync-agent/mapping-util");
 const ServiceClient = require("./service-client");
-
-const pipeStreamToPromise = require("./support/pipe-stream-to-promise");
 
 const CONTACT_FIELDDEFS = require("./sync-agent/contact-fielddefs");
 
@@ -125,54 +122,6 @@ class SyncAgent {
       return { value: f.id, label: f.label };
     });
     return opts;
-  }
-
-  async fetchUpdatedContacts(): Promise<any> {
-    await this.initialize();
-
-    this.hullClient.logger.info("incoming.job.start");
-
-    const streamOfUpdatedContacts = this.aircallClient.getContactsStream();
-
-    return pipeStreamToPromise(streamOfUpdatedContacts, contacts => {
-      this.hullClient.logger.info("incoming.job.progress", {
-        contacts: contacts.length
-      });
-
-      return Promise.all(
-        contacts.map(contact => {
-          const hullUserIdent = this.mappingUtil.mapContactToHullUserIdent(
-            contact
-          );
-          const hullUserAttributes = this.mappingUtil.mapContactToHullUserAttributes(
-            contact
-          );
-
-          const asUser = this.hullClient.asUser(hullUserIdent);
-
-          return asUser
-            .traits(hullUserAttributes)
-            .then(() => {
-              asUser.logger.info("incoming.user.success", hullUserAttributes);
-            })
-            .catch(error => {
-              console.log(error);
-
-              asUser.logger.error("incoming.user.error", error);
-            });
-        })
-      );
-    })
-      .then(() => {
-        this.helpers.updateSettings({
-          last_sync_at: Math.floor(DateTime.utc().toMillis() / 1000)
-        });
-
-        this.hullClient.logger.info("incoming.job.success");
-      })
-      .catch(error => {
-        this.hullClient.logger.error("incoming.job.error", { reason: error });
-      });
   }
 
   async buildContactUpdateEnvelope(

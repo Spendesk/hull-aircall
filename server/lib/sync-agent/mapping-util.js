@@ -1,5 +1,5 @@
 /* @flow */
-import type { THullUserIdent, THullUserAttributes } from "hull";
+import type { THullUserAttributes } from "hull";
 
 import type {
   AircallContactRead,
@@ -64,18 +64,6 @@ class MappingUtil {
     });
 
     return contactWrite;
-  }
-
-  mapContactToHullUserIdent(contact: AircallContactRead): THullUserIdent {
-    const ident = {};
-
-    if (!_.isEmpty(contact.phone_numbers)) {
-      ident.phone = _.get(contact, "phone_numbers[0].value");
-    }
-
-    ident.anonymous_id = `aircall:${contact.id}`;
-
-    return ident;
   }
 
   mapContactToHullUserAttributes(

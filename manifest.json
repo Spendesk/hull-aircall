@@ -79,11 +79,6 @@
   "subscriptions": [{ "url": "/smart-notifier" }],
   "schedules": [
     {
-      "url": "/fetch",
-      "type": "cron",
-      "value": "0 4 1 * *"
-    },
-    {
       "url": "/status",
       "type": "cron",
       "value": "*/30 * * * *"

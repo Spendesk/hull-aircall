@@ -37,22 +37,4 @@ describe("SyncAgent", () => {
       });
     });
   });
-
-  describe("fetchUpdatedContacts", () => {
-    const scenariosToRun = ["fetch-contacts"];
-
-    scenariosToRun.forEach(scenarioName => {
-      test(`${scenarioName}`, () => {
-        const schedulerPayload = require(`./scenarios/${scenarioName}/scheduler-payload`)();
-        ctxMock.connector = schedulerPayload.connector;
-        ctxMock.ship = schedulerPayload.connector;
-        const syncAgent = new SyncAgent(ctxMock);
-        require(`./scenarios/${scenarioName}/api-response-expectations`)(nock);
-        return syncAgent.fetchUpdatedContacts().then(() => {
-          require(`./scenarios/${scenarioName}/ctx-expectations`)(ctxMock);
-          expect(nock.isDone()).toBe(true);
-        });
-      });
-    });
-  });
 });

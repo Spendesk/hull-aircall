@@ -1,11 +1,9 @@
 /* @flow */
-import type { Readable } from "stream";
 import type {
   HullMetrics,
   HullClientLogger,
   AircallContactWrite,
   AircallContactRead,
-  AircallContactListResponse,
   AircallContactUpdateEnvelope,
   ServiceClientConfiguration
 } from "./types";
@@ -14,7 +12,6 @@ const _ = require("lodash");
 
 const superagent = require("superagent");
 const SuperagentThrottle = require("superagent-throttle");
-const promiseToReadableStream = require("./support/promise-to-readable-stream");
 
 const {
   superagentUrlTemplatePlugin,
@@ -71,50 +68,10 @@ class ServiceClient {
           this.hullMetric.value("ship.service_api.limit", limit);
         }
       })
-      .set({ 
+      .set({
         "Content-Type": "application/json",
-        "Authorization": `Basic ${this.apiKey}`
+        Authorization: `Basic ${this.apiKey}`
       });
-  }
-
-  getContacts(
-    per_page: number = 100,
-    page: number = 0
-  ): Promise<SuperAgentResponse<AircallContactListResponse>> {
-    if (!this.hasValidApiKey()) {
-      return Promise.reject(
-        new ConfigurationError("No API key specified in the Settings.", {})
-      );
-    }
-
-    return this.agent.get(`${this.urlPrefix}/contacts/`).query({
-      per_page,
-      page
-    });
-  }
-
-  getContactsStream(): Readable {
-    return promiseToReadableStream(push => {
-      return this.getContacts(100, 0).then(res => {
-        push(res.body.contacts);
-
-        const apiOps = [];
-
-        if (res.body.meta.total !== 0) {
-          const totalPages = Math.ceil(res.body.meta.total / 100);
-
-          for (let page = 1; page < totalPages; page += 1) {
-            apiOps.push(this.getContacts(100, page));
-          }
-        }
-
-        return Promise.all(apiOps).then(results => {
-          results.forEach(result => {
-            push(result.body.contacts);
-          });
-        });
-      });
-    });
   }
 
   postContact(data: AircallContactWrite): Promise<AircallContactRead> {

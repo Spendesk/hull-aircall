@@ -113,13 +113,7 @@
                     "url": "/smart-notifier"
                 }
             ],
-            "schedules": [
-                {
-                    "url": "/fetch",
-                    "type": "cron",
-                    "value": "*/5 * * * *"
-                }
-            ]
+            "schedules": []
         },
         "secret": "995ece09c8d843f6bc38e5abd1f60f6b",
         "ends_at": null,

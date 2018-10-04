@@ -28,7 +28,7 @@ if (REDIS_URL) {
     compress: true,
     max: 10000,
     ttl,
-    isCacheableValue: (value) => {
+    isCacheableValue: value => {
       if (value && value.error === 103) {
         return false;
       }
@@ -40,7 +40,7 @@ if (REDIS_URL) {
     store: "memory",
     max: 1000,
     ttl,
-    isCacheableValue: (value) => {
+    isCacheableValue: value => {
       if (value && value.error === 103) {
         return false;
       }
