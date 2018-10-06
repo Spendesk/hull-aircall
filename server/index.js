@@ -13,10 +13,10 @@ const {
 } = process.env;
 
 if (LOG_LEVEL) {
-  Hull.logger.transports.console.level = LOG_LEVEL;
+  Hull.Client.logger.transports.console.level = LOG_LEVEL;
 }
 
-Hull.logger.transports.console.json = true;
+Hull.Client.logger.transports.console.json = true;
 
 let cache;
 const ttl = 86400 * 30;
