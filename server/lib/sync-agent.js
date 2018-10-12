@@ -191,7 +191,7 @@ class SyncAgent {
         } catch (error) {
           return this.hullClient
             .asUser(updatedEnvelope.message.user)
-            .logger.info("outgoing.user.error", error);
+            .logger.info("outgoing.user.error", error.message);
         }
       })
     );
@@ -227,7 +227,7 @@ class SyncAgent {
         } catch (error) {
           return this.hullClient
             .asUser(insertedEnvelope.message.user)
-            .logger.info("outgoing.user.error", error);
+            .logger.info("outgoing.user.error", error.message);
         }
       })
     );
