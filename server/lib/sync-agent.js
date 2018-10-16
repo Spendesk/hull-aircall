@@ -23,8 +23,6 @@ const FilterUtil = require("./sync-agent/filter-util");
 const MappingUtil = require("./sync-agent/mapping-util");
 const ServiceClient = require("./service-client");
 
-const CONTACT_FIELDDEFS = require("./sync-agent/contact-fielddefs");
-
 const BASE_API_URL = "https://api.aircall.io/v1";
 
 class SyncAgent {
@@ -107,22 +105,6 @@ class SyncAgent {
     finalSettings.contact_attributes_inbound = contactAttrIn;
 
     return finalSettings;
-  }
-
-  getContactFieldOptionsInbound(): Array<HullFieldDropdownItem> {
-    const fields = _.filter(CONTACT_FIELDDEFS, { in: true });
-    const opts = _.map(fields, f => {
-      return { value: f.id, label: f.label };
-    });
-    return opts;
-  }
-
-  getContactFieldOptionsOutbound(): Array<HullFieldDropdownItem> {
-    const fields = _.filter(CONTACT_FIELDDEFS, { out: true });
-    const opts = _.map(fields, f => {
-      return { value: f.id, label: f.label };
-    });
-    return opts;
   }
 
   async buildContactUpdateEnvelope(
