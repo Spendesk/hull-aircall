@@ -45,7 +45,7 @@ class SyncAgent {
 
     const loadedSettings: AircallConnectorSettings = _.get(
       reqContext,
-      "ship.private_settings"
+      "connector.private_settings"
     );
     this.normalizedPrivateSettings = this.normalizeSettings(loadedSettings);
 
